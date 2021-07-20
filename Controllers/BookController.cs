@@ -95,9 +95,29 @@ namespace PostgresApplication.Controllers
 
         // POST: api/Book
         [HttpPost]
-        public async Task<ActionResult<Book>> PostBook(Book book)
+        public async Task<ActionResult<Book>> PostBook(CreateBook book)
         {
-            _context.Book.Add(book);
+
+            _context.Book.Add(new Book
+            {
+                BookName = book.BookName,
+                Details = book.Details,
+                Price = book.Price,
+            });
+
+            if (book.Location != null)
+            {
+                foreach (var location in book.Location)
+                {
+                    _context.Location.Add(new Location
+                    {
+                        LocationId = book.BookId,
+                        Address = location.Address,
+                        PinCode = location.PinCode,
+                    });
+                }
+            }
+
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetBook", new { id = book.BookId }, book);
@@ -114,8 +134,18 @@ namespace PostgresApplication.Controllers
             }
 
             _context.Book.Remove(book);
-            await _context.SaveChangesAsync();
 
+            // Removing Associated locations
+            List<Location> locations = await _context.Location.Where(x => x.LocationId == book.BookId).ToListAsync();
+            if (locations != null)
+            {
+                foreach (var location in locations)
+                {
+                    _context.Location.Remove(location);
+                }
+            }
+
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 

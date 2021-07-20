@@ -27,4 +27,13 @@ namespace PostgresApplication.Model
         public int Price { get; set; }
 
     }
+
+    public class CreateBook
+    {
+        public int BookId { get; set; }
+        public string BookName { get; set; }
+        public string Details { get; set; }
+        public int Price { get; set; }
+        public virtual List<Location> Location { get; set; }
+    }
 }

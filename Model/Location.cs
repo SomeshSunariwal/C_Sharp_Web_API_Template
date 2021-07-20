@@ -24,4 +24,11 @@ namespace PostgresApplication.Model
         [JsonIgnore]
         public Book Book { get; set; }
     }
+
+    public class PostLocation
+    {
+        public string Address { get; set; }
+
+        public int PinCode { get; set; }
+    }
 }
