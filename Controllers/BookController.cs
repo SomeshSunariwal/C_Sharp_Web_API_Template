@@ -9,7 +9,7 @@ using PostgresApplication.Model;
 
 namespace PostgresApplication.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("books/")]
     [ApiController]
     public class BookController : ControllerBase
     {
@@ -24,7 +24,13 @@ namespace PostgresApplication.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Book>>> GetBook()
         {
-            return await _context.Book.ToListAsync();
+            List<Book> Books = await _context.Book.ToListAsync();
+
+            foreach (var book in Books)
+            {
+                book.Location = await _context.Location.Where(x => x.LocationId == book.BookId).ToListAsync();
+            }
+            return Books;
         }
 
         // GET: api/Book/5
@@ -33,10 +39,15 @@ namespace PostgresApplication.Controllers
         {
             var book = await _context.Book.FindAsync(id);
 
+
             if (book == null)
             {
                 return NotFound();
             }
+
+            List<Location> locations = await _context.Location.Where(x => x.LocationId == book.BookId).ToListAsync();
+
+            book.Location = locations;
 
             return book;
         }
@@ -49,10 +60,22 @@ namespace PostgresApplication.Controllers
             {
                 throw new NullReferenceException();
             }
-
+            Book TempBook;
             try
             {
-                _context.Entry(book).State = EntityState.Modified;
+                TempBook = await _context.Book.FindAsync(id);
+                if (book.BookName != null)
+                {
+                    TempBook.BookName = book.BookName;
+                }
+                if (book.Details != null)
+                {
+                    TempBook.Details = book.Details;
+                }
+                if (book.Price != TempBook.Price)
+                {
+                    TempBook.Price = book.Price;
+                }
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -67,7 +90,7 @@ namespace PostgresApplication.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(TempBook);
         }
 
         // POST: api/Book

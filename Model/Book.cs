@@ -26,6 +26,5 @@ namespace PostgresApplication.Model
 
         public int Price { get; set; }
 
-        public virtual List<Location> Location { get; set; }
     }
 }
