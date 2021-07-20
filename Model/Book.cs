@@ -34,6 +34,6 @@ namespace PostgresApplication.Model
         public string BookName { get; set; }
         public string Details { get; set; }
         public int Price { get; set; }
-        public virtual List<Location> Location { get; set; }
+        public virtual List<PostLocation> Location { get; set; }
     }
 }

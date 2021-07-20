@@ -95,7 +95,7 @@ namespace PostgresApplication.Controllers
 
         // POST: api/Book
         [HttpPost]
-        public async Task<ActionResult<Book>> PostBook(CreateBook book)
+        public async Task<ActionResult<Book>> PostBook([FromBody]CreateBook book)
         {
 
             _context.Book.Add(new Book
