@@ -18,22 +18,87 @@ namespace PostgresApplication.Controllers
         public BookController(BookContext context)
         {
             _context = context;
-            _context.Database.EnsureCreated();
         }
 
-        // GET: api/Books
+        // GET: api/Book
         [HttpGet]
-        public  List<Book> GetBook()
+        public async Task<ActionResult<IEnumerable<Book>>> GetBook()
         {
-            var Books = _context.Book.ToList();
+            return await _context.Book.ToListAsync();
+        }
 
-            foreach (var book in Books)
+        // GET: api/Book/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Book>> GetBook(int id)
+        {
+            var book = await _context.Book.FindAsync(id);
+
+            if (book == null)
             {
-                book.Location = _context.Location.Where(x => x.LocationId == book.BookId).ToList();
+                return NotFound();
             }
 
-            return Books;
+            return book;
         }
 
+        // PUT: api/Book/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutBook(int id, UpdateBook book)
+        {
+            if (!BookExists(id))
+            {
+                throw new NullReferenceException();
+            }
+
+            try
+            {
+                _context.Entry(book).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!BookExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw new NullReferenceException();
+                }
+            }
+
+            return NoContent();
+        }
+
+        // POST: api/Book
+        [HttpPost]
+        public async Task<ActionResult<Book>> PostBook(Book book)
+        {
+            _context.Book.Add(book);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetBook", new { id = book.BookId }, book);
+        }
+
+        // DELETE: api/Book/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBook(int id)
+        {
+            var book = await _context.Book.FindAsync(id);
+            if (book == null)
+            {
+                return NotFound();
+            }
+
+            _context.Book.Remove(book);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private bool BookExists(int id)
+        {
+            return _context.Book.Any(e => e.BookId == id);
+        }
     }
 }
