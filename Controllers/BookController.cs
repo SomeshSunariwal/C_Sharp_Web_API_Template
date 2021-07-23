@@ -9,7 +9,7 @@ using PostgresApplication.Model;
 
 namespace PostgresApplication.Controllers
 {
-    [Route("books/")]
+
     [ApiController]
     public class BookController : ControllerBase
     {
@@ -21,7 +21,7 @@ namespace PostgresApplication.Controllers
         }
 
         // GET: api/Book
-        [HttpGet]
+        [HttpGet("/book")]
         public async Task<ActionResult<IEnumerable<Book>>> GetBook()
         {
             List<Book> Books = await _context.Book.ToListAsync();
@@ -34,7 +34,7 @@ namespace PostgresApplication.Controllers
         }
 
         // GET: api/Book/5
-        [HttpGet("{id}")]
+        [HttpGet("/book/{id}")]
         public async Task<ActionResult<Book>> GetBook(int id)
         {
             var book = await _context.Book.FindAsync(id);
@@ -53,7 +53,7 @@ namespace PostgresApplication.Controllers
         }
 
         // PUT: api/Book/5
-        [HttpPut("{id}")]
+        [HttpPut("/book/{id}")]
         public async Task<IActionResult> PutBook(int id, UpdateBook book)
         {
             if (!BookExists(id))
@@ -94,8 +94,8 @@ namespace PostgresApplication.Controllers
         }
 
         // POST: api/Book
-        [HttpPost]
-        public async Task<ActionResult<Book>> PostBook([FromBody]CreateBook book)
+        [HttpPost("/book")]
+        public async Task<ActionResult<Book>> PostBook([FromBody] CreateBook book)
         {
 
             _context.Book.Add(new Book
@@ -124,7 +124,7 @@ namespace PostgresApplication.Controllers
         }
 
         // DELETE: api/Book/5
-        [HttpDelete("{id}")]
+        [HttpDelete("/book/{id}")]
         public async Task<IActionResult> DeleteBook(int id)
         {
             var book = await _context.Book.FindAsync(id);
@@ -147,6 +147,38 @@ namespace PostgresApplication.Controllers
 
             await _context.SaveChangesAsync();
             return NoContent();
+        }
+
+        [Route("/Register")]
+        [HttpPost]
+        public ActionResult<RegisterUser> RegisterUserRequest([FromBody] RegisterUser UserRegisterRequest)
+        {
+            try
+            {
+                UserRegisterRequest.Password = BCrypt.Net.BCrypt.HashPassword(UserRegisterRequest.Password);
+                _context.RegisterUser.Add(UserRegisterRequest);
+                _context.SaveChanges();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Internal Server Error" });
+            }
+            return Created("Success", UserRegisterRequest);
+        }
+
+        [Route("/Login")]
+        [HttpPost]
+        public IActionResult Login([FromBody] Login LoginRequest)
+        {
+            var user = _context.RegisterUser.FirstOrDefault(user => user.Email == LoginRequest.Email);
+
+            // User Not Available in database
+            if (user == null) return Unauthorized(new { message = "Unauthorized" });
+
+            // Password Match to the user
+            if (!BCrypt.Net.BCrypt.Verify(LoginRequest.Password, user.Password)) return Unauthorized(new { message = "Unauthorized" });
+
+            return Ok(LoginRequest);
         }
 
         private bool BookExists(int id)

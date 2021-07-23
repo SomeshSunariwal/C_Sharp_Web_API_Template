@@ -15,6 +15,8 @@ namespace PostgresApplication.Model
 
         public DbSet<Location> Location { get; set; }
 
+        public DbSet<RegisterUser> RegisterUser { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
