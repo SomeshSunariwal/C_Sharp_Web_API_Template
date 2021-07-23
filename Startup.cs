@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using PostgresApplication.Helper;
 using PostgresApplication.Model;
 using System;
 using System.Collections.Generic;
@@ -42,7 +43,10 @@ namespace PostgresApplication
         {
 
             services.AddControllers();
+            
             services.AddDbContext<BookContext>(optionsBuilder => optionsBuilder.UseNpgsql(GetConnectionStringForDB()));
+            services.AddScoped<JwtService>();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "PostgresApplication", Version = "v1" });

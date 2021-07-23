@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PostgresApplication.Helper;
 using PostgresApplication.Model;
 
 namespace PostgresApplication.Controllers
@@ -15,9 +16,12 @@ namespace PostgresApplication.Controllers
     {
         private readonly BookContext _context;
 
-        public BookController(BookContext context)
+        private readonly JwtService _jwtService;
+
+        public BookController(BookContext context, JwtService jwtService)
         {
             _context = context;
+            _jwtService = jwtService;
         }
 
         // GET: api/Book
@@ -155,6 +159,7 @@ namespace PostgresApplication.Controllers
         {
             try
             {
+                // Hasing Password
                 UserRegisterRequest.Password = BCrypt.Net.BCrypt.HashPassword(UserRegisterRequest.Password);
                 _context.RegisterUser.Add(UserRegisterRequest);
                 _context.SaveChanges();
@@ -178,7 +183,9 @@ namespace PostgresApplication.Controllers
             // Password Match to the user
             if (!BCrypt.Net.BCrypt.Verify(LoginRequest.Password, user.Password)) return Unauthorized(new { message = "Unauthorized" });
 
-            return Ok(LoginRequest);
+            var token = _jwtService.TokenGenerator(LoginRequest.Email);
+
+            return Ok(new { token = token});
         }
 
         private bool BookExists(int id)
