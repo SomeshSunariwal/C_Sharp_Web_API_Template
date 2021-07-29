@@ -11,21 +11,37 @@ namespace PostgresApplication.Helper
 {
     public class JwtService
     {
-        private string SecureKey = "this is a very secure key| Get it from Enviroment Variable";
 
-        public string TokenGenerator(string Email)
+        private static readonly string key = "this is a super secret key. Store it in enviroment variable";
+        private static readonly SymmetricSecurityKey SymmetricSecuritySingingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+
+        public string TokenGenerator(string Email, string FirstName, string LastName)
         {
-            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecureKey));
 
-            var credentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
+            var credentials = new SigningCredentials(SymmetricSecuritySingingKey, SecurityAlgorithms.HmacSha256);
 
             var header = new JwtHeader(credentials);
 
-            var payload = new JwtPayload(Email.ToString(), "Service Name", null, null ,DateTime.Today.AddHours(1));
+            DateTime Expire = DateTime.UtcNow.AddHours(1);
+            int ts = (int)(Expire - new DateTime(1997, 1, 1)).TotalSeconds;
+
+            var payload = new JwtPayload
+            {
+                {"sub", "MyService" },
+                {"name", FirstName + " " +LastName },
+                {"email", Email },
+                {"exp", ts },
+                {"iss", "https://localhost:5001" },
+                {"aud", "https://localhost:5001" }
+            };
 
             var securityToken = new JwtSecurityToken(header, payload);
 
-            return new JwtSecurityTokenHandler().WriteToken(securityToken);
+            var handler = new JwtSecurityTokenHandler();
+
+            var TokenString = handler.WriteToken(securityToken);
+
+            return TokenString;
         }
     }
 }

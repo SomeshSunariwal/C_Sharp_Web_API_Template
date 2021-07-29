@@ -7,18 +7,26 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PostgresApplication.Helper;
 using PostgresApplication.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace PostgresApplication
 {
     public class Startup
     {
+
+        // Super Secret Key
+
+        private static readonly string key = "this is a super secret key. Store it in enviroment variable";
+        private static readonly SymmetricSecurityKey SymmetricSecuritySingingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -43,7 +51,26 @@ namespace PostgresApplication
         {
 
             services.AddControllers();
-            
+
+            services.AddAuthentication(options =>
+                {
+                    options.DefaultChallengeScheme = "JwtBearer";
+                    options.DefaultAuthenticateScheme = "JwtBearer";
+
+                }).AddJwtBearer("JwtBearer", jwtOptions =>
+                {
+                    jwtOptions.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        IssuerSigningKey = SymmetricSecuritySingingKey,
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidIssuer = "https://localhost:5001",
+                        ValidAudience = "https://localhost:5001",
+                        ValidateLifetime = true
+                    };
+                });
+
+
             services.AddDbContext<BookContext>(optionsBuilder => optionsBuilder.UseNpgsql(GetConnectionStringForDB()));
             services.AddScoped<JwtService>();
 
@@ -66,6 +93,8 @@ namespace PostgresApplication
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PostgresApplication.Helper;
@@ -26,6 +26,7 @@ namespace PostgresApplication.Controllers
 
         // GET: api/Book
         [HttpGet("/book")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<Book>>> GetBook()
         {
             List<Book> Books = await _context.Book.ToListAsync();
@@ -181,11 +182,14 @@ namespace PostgresApplication.Controllers
             if (user == null) return Unauthorized(new { message = "Unauthorized" });
 
             // Password Match to the user
-            if (!BCrypt.Net.BCrypt.Verify(LoginRequest.Password, user.Password)) return Unauthorized(new { message = "Unauthorized" });
+            if (!BCrypt.Net.BCrypt.Verify(LoginRequest.Password, user.Password))
+            {
+                return Unauthorized(new { message = "Unauthorized" });
+            }
 
-            var token = _jwtService.TokenGenerator(LoginRequest.Email);
+            var token = _jwtService.TokenGenerator(LoginRequest.Email, user.FirstName, user.LastName);
 
-            return Ok(new { token = token});
+            return Ok(new { token = token });
         }
 
         private bool BookExists(int id)
