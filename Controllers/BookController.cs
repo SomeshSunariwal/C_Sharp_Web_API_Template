@@ -25,8 +25,9 @@ namespace PostgresApplication.Controllers
         }
 
         // GET: api/Book
-        [HttpGet("/book")]
         [Authorize]
+        [Route("/book")]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<Book>>> GetBook()
         {
             List<Book> Books = await _context.Book.ToListAsync();

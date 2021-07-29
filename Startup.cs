@@ -24,7 +24,7 @@ namespace PostgresApplication
 
         // Super Secret Key
 
-        private static readonly string key = "this is a super secret key. Store it in enviroment variable";
+        private static readonly string key = "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnm";
         private static readonly SymmetricSecurityKey SymmetricSecuritySingingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
 
         public Startup(IConfiguration configuration)
@@ -52,6 +52,11 @@ namespace PostgresApplication
 
             services.AddControllers();
 
+
+
+            services.AddDbContext<BookContext>(optionsBuilder => optionsBuilder.UseNpgsql(GetConnectionStringForDB()));
+            services.AddScoped<JwtService>();
+
             services.AddAuthentication(options =>
                 {
                     options.DefaultChallengeScheme = "JwtBearer";
@@ -64,15 +69,11 @@ namespace PostgresApplication
                         IssuerSigningKey = SymmetricSecuritySingingKey,
                         ValidateIssuer = true,
                         ValidateAudience = true,
-                        ValidIssuer = "https://localhost:5001",
-                        ValidAudience = "https://localhost:5001",
+                        ValidIssuer = "https://localhost:44372",
+                        ValidAudience = "https://localhost:44372",
                         ValidateLifetime = true
                     };
                 });
-
-
-            services.AddDbContext<BookContext>(optionsBuilder => optionsBuilder.UseNpgsql(GetConnectionStringForDB()));
-            services.AddScoped<JwtService>();
 
             services.AddSwaggerGen(c =>
             {
@@ -89,6 +90,7 @@ namespace PostgresApplication
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "PostgresApplication v1"));
             }
+
 
             app.UseHttpsRedirection();
 

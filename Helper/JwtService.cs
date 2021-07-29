@@ -12,7 +12,7 @@ namespace PostgresApplication.Helper
     public class JwtService
     {
 
-        private static readonly string key = "this is a super secret key. Store it in enviroment variable";
+        private static readonly string key = "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnm";
         private static readonly SymmetricSecurityKey SymmetricSecuritySingingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
 
         public string TokenGenerator(string Email, string FirstName, string LastName)
@@ -23,16 +23,16 @@ namespace PostgresApplication.Helper
             var header = new JwtHeader(credentials);
 
             DateTime Expire = DateTime.UtcNow.AddHours(1);
-            int ts = (int)(Expire - new DateTime(1997, 1, 1)).TotalSeconds;
+            int ts = (int)(Expire - new DateTime(1970, 1, 1)).TotalSeconds;
 
             var payload = new JwtPayload
             {
                 {"sub", "MyService" },
-                {"name", FirstName + " " +LastName },
+                {"name", "somesh" },
                 {"email", Email },
                 {"exp", ts },
-                {"iss", "https://localhost:5001" },
-                {"aud", "https://localhost:5001" }
+                {"iss", "https://localhost:44372" },
+                {"aud", "https://localhost:44372" }
             };
 
             var securityToken = new JwtSecurityToken(header, payload);
