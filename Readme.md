@@ -1,4 +1,4 @@
-# C# Application with Baisc JWT Bearer Auth
+# C# Application with Basic JWT Bearer Auth
 
 
 # Resources
