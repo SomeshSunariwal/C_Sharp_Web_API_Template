@@ -34,7 +34,8 @@ namespace PostgresApplication
 
         public IConfiguration Configuration { get; }
 
-        // Get the Connection String from Application, If not Available then it will be picked from ENV Variable Named "DATABASE_CRED"
+        // Below function will get the Connection String from the System ENV variable Named "DATABASE_CRED". if not available then will get the 
+        // connection string from configuration.
         private string GetConnectionStringForDB()
         {
             string ENV_DATA = Environment.GetEnvironmentVariable("DATABASE_CRED");
